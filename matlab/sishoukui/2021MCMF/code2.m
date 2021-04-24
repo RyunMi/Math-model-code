@@ -1,0 +1,11 @@
+clc,clear;
+Z=xlsread('Hun.xlsx');
+X=Z(1:end-3,2:6); 
+b=Z(1:18,9:14);
+F_1=[-0.73,0.855,0.039,0.051,0.264,0.270];
+F_2=[1.034,-0.693,0.225,0.212,-0.023,-0.031];
+Yhat=b*F_1';
+Yba=b*F_2';
+Y=[Yhat,Yba];
+super=deasuper(X, Y, 'orient', 'io');
+deadisp(super);
