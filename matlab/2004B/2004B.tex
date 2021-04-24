@@ -1,0 +1,1297 @@
+\documentclass[12pt,a4paper]{ctexart}
+
+\usepackage{enumerate}%序号
+%\usepackage{booktabs}{\toprule[2pt] }
+
+\title{\heiti{\zihao{3} 电力市场的输电阻塞管理模型}}
+\author{\kaishu 谷海\ 刘嘉诚\ 米科润\ 蒋奇奇\ }
+\date{}
+
+\usepackage{graphicx}
+\graphicspath{{figures/},{pics/}} %图片在当前目录下的figures目录
+
+\usepackage{geometry}
+\geometry{left=3.17cm,right=3.17cm,top=2.54cm,bottom=2.54cm}
+
+\ctexset{
+	section={format+=\zihao{4} \heiti },
+	subsection={format+=\zihao{-4} \heiti  \raggedright},
+	subsubsection={format+=\zihao{-4} \heiti  \raggedright}
+}
+
+\usepackage{setspace}
+\renewcommand{\baselinestretch}{1.0}
+%\setstretch{1}
+
+\usepackage{paralist}
+\let\itemize\compactitem
+\let\enditemize\endcompactitem
+\let\enumerate\compactenum
+\let\endenumerate\endcompactenum
+\let\description\compactdesc
+\let\enddescription\endcompactdesc
+
+
+\ctexset{section={
+		name={},
+		number=\arabic{section},
+} }
+\usepackage{fancyhdr}
+\fancyhf{}
+\lhead{\textnormal{\kaishu}}	%\rightmark
+\rhead{--\ \thepage\ --}
+\pagestyle{fancy}
+% \sectionmark 的重定义需要在 \pagestyle 之后生效
+\renewcommand\sectionmark[1]{%
+	\markright{\CTEXifname{\CTEXthesection——}{}#1}}
+
+\usepackage{pifont}
+
+\usepackage{longtable}
+\usepackage{booktabs}
+
+\usepackage{fancyhdr} % 添加页眉页脚
+
+\pagestyle{fancy}
+\lhead{}
+\chead{}
+\rhead{}
+\lfoot{}
+\cfoot{\thepage}
+\rfoot{}
+%\renewcommand{\headrulewidth}{0pt} %改为0pt即可去掉页眉下面的横线
+%\renewcommand{\footrulewidth}{0pt} %改为0pt即可去掉页脚上面的横线 0.4pt
+%\includepdfset{pagecommand={\thispagestyle{fancy}}} % pdfpages宏包插入文件无页码的解决
+
+
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+\usepackage{xcolor}
+\usepackage{subfigure}
+\graphicspath{{figures/}}
+\usepackage{amsmath}
+\usepackage{amssymb}
+\usepackage{listings}
+%\usepackage[framed,numbered,autolinebreaks,useliterate]{mcode} %文章开头调用宏包
+\usepackage{textcomp}
+
+%for long table
+\usepackage{longtable}
+
+%for table toprule line
+\usepackage{booktabs}
+\usepackage{adjustbox}
+
+
+\begin{document} 
+	\maketitle
+	
+\begin{abstract}
+	为了使输电阻塞问题的解决变得更加具有普适性，本文分六阶段规划流程，对整个流程系统进行了建模。
+	
+	第一步，采用基于矩阵分析的0/1规划算法，确定分配预案。第二步，采用多元线性回归确定有功潮流的近似表达式，并以此判断分配预案是否出现输电阻塞。第三步，在出现输电阻塞的情况下，以阻塞费用最小为目标，调整分配预案，保证每条线路的潮流值都低于潮流限值。第四步，若无法保证低于潮流限值，则在保证每一条线路使用安全裕度尽可能少的前提下，采用双目标规划，求出阻塞费用最小的方案 。第五步，若无法保证一条线路的潮流值在安全裕度内，则拉闸限电。第六步，分两阶段计算阻塞费用 ，将阻塞费用分为序内补偿和序外补偿两大部分，通过前后利润图分析确定统一的赔偿计算规则。进一步引入期望因子，在保证总阻塞费用的不变的情况下，进行公平性调整。最后，得出最终方案。
+	
+	其中，在确定分配预案时，本文引入回溯思想对算法进行改进，使得算法更加的简易，更符合实际应用。在确定多元线性回归模型时，本文从理论和实际意义上，分析了带常数项的多元线性方程和不带常数项的多元线性方程，最后是选择了带常数项的多元线性方程作为近似表达式。在考虑安全裕度时，引入了警戒系数 并将其作为目标，充分合理地考虑了安全裕度对方案调整以及阻塞费用的影响。
+	
+	此模型在阻塞费用的确定方面，分两阶段进行，具有较大的现实意义。第一阶段直接确定了阻塞费用的通式，可用于总阻塞费用的具体量化。而第二阶段，通过期望因子调整，则保证了公平性。
+	
+	在对问题的解答过程中，本文也充分地体现了建模的思路，解释了模型的合理性。第一题运用模型第二步的确定的近似表达式，进行拟合分别得到了六条线路潮流值关于出力的近似表达式。问题二即模型第六步给出的阻塞费用计算规则。问题三运用模型第一步，确定分配预案的方法。得出负荷需求为982.4MW时，各机组的出力(MW)分别为150，79，180，99.5，125，140，95，113.9，清算价为303。问题四运用模型的第三步、第四步和问题二的计算公式，得出最终出力方案，各机组的出力(MW)分别为152.9999，88，227.9969，80，151.3886，95.0035，70.0113，116.9997，清算价为489，阻塞费用为4751.75。问题五运用到整个模型，得到最终出力分别为153，87.9971，228，99.5，152，113.2152，102.0877，117，清算价为489，阻塞费用为2680.5。
+	
+	~\\
+	\textbf{关键字：}{阻塞费用\quad 分阶段规划流程\quad 多元线性拟合\quad 最小最大后悔值法\quad \hspace*{3.7em} 回溯思想\quad 期望因子\quad 警戒系数}
+
+\end{abstract}
+
+
+\newpage
+\section{问题重述}
+如今，我国的电力市场化改革已经进入实质阶段，电力市场化将迎来新的一轮发展。而在这个过程中，电力市场的输电阻塞管理是一个无法规避的重要问题。
+
+在解决问题前，我们首先需要了解电力市场规则、电网结构、输电阻塞管理原则、电力调度计划制定流程以及相关概念。
+
+第一：电力市场规则。以15分钟作为一个交易时段，每台机组在当前时段开始时刻给出下一时段的报价。各机组将可用出力由低到高分成至多十段报价，每段长度称为段容量。每个段容量报一个价，即段价。段价按段序数单调不减。在最低技术出力以下的报价一般为负值，表示厂方愿意付费维持发电以避免停机带来更大的损失。
+
+第二：电网结构。电网结构包括若干发电机组和若干条主要线路，每一条线路上的输电功率和方向用有功潮流来刻画。有功潮流取决于电网结构和各发电机组出力。每条线路有功潮流的绝对值有一安全限值，而这一安全限值又有相应的相对安全裕度，即在应急情况下潮流绝对值可以超过限制百分比的上限。如果各机组出力分配方案使某条线路上的有功潮流的绝对值超出限值就称为输电阻塞。此时，需要制定既安全又经济的调度计划。
+ 
+第三：电力调度计划制定的流程。在当前时段内，市场交易-调度中心根据下一个时段的负荷预报、每台机组的报价、当前出力和出力改变速率，按段价从低到高选取各机组的段容量或其部分，直到它们之和等于预报的负荷。这时每个机组被选入的段容量或其部分之和形成该时段该机组的出力分配预案（初始交易结果）。最后一个被选入的段价（最高段价）称为该时段的清算价，该时段全部机组的所有出力均按清算价结算。
+
+第四：输电阻塞管理原则
+\begin{enumerate}[I.]
+	\item 调整各机组出力分配方案使得输电阻塞消除。
+	
+	\item 如果i做不到，还可以使用线路的安全裕度输电，以避免拉闸限电(强制减少负荷需求)，但要使每条线路上潮流的绝对值超过限值的百分比尽量小。
+	
+	\item 如果无论怎样分配机组出力都无法使每条线路上的潮流绝对值超过限值的百分比小于相对安全裕度，则必须在用电侧拉闸限电。
+	
+	\item 当改变根据电力市场交易规则得到的各机组出力分配预案时，一些序内容量不能出力；而一些序外容量要在低于对应报价的清算价上出力。此网方要为其违反了市场规则，向发电方做出适当赔偿。赔偿费用即为阻塞费用。网方在电网安全运行的保证下应当同时考虑尽量减少阻塞费用。
+\end{enumerate}
+
+
+
+\vspace{0.5em}
+
+{\noindent {\Large $\bullet$}需要注意的一些概念：}
+\begin{enumerate}[ a.]
+	\item 每个时段的负荷预报和机组出力分配计划的参照时刻均为该时段结束时刻。
+	\item 机组当前出力是对机组在当前时段结束时刻实际出力的预测值。
+	\item 假设每台机组单位时间内能增加或减少的出力相同，该出力值称为该机组的爬坡速率。由于机组爬坡速率的约束，可能导致选取它的某个段容量的部分。
+	\item 为了使得各机组计划出力之和等于预报的负荷需求，清算价对应的段容量可能只选取部分。
+\end{enumerate}
+\vspace{0.5em}
+{\Large $\bullet$}了解这些之后，我们将需要解决以下五个问题：
+\begin{enumerate}[ (1)]
+	\item 某电网有8台发电机组，6条主要线路，表1和表2中的方案0给出了各机组的当前出力和各线路上对应的有功潮流值，方案1\~{}32给出了围绕方案0的一些实验数据，试用这些数据确定各线路上有功潮流关于各发电机组出力的近似表达式。
+	\item 设计一种简明、合理的阻塞费用计算规则，除考虑上述电力市场规则外，还需注意：在输电阻塞发生时公平地对待序内容量不能出力的部分和报价高于清算价的序外容量出力的部分。
+	\item 假设下一个时段预报的负荷需求是982.4MW，表3、表4和表5分别给出了各机组的段容量、段价和爬坡速率的数据，试按照电力市场规则给出下一个时段各机组的出力分配预案。
+	\item 按照表6给出的潮流限值，检查得到的出力分配预案是否会引起输电阻塞，并在发生输电阻塞时，根据安全且经济的原则，调整各机组出力分配方案，并给出与该方案相应的阻塞费用。
+	\item 假设下一个时段预报的负荷需求是1052.8MW，重复3\~{}4的工作。
+\end{enumerate}
+
+
+
+
+
+
+\section{模型假设}
+\begin{enumerate}[1.]
+\item AGC辅助服务，在整个过程不发力。
+\item 以所有机组报价的最高价作为清算价。
+\item 在整个流程中，电网结构不发生改变。
+\item 机组每一段的段价即为当前段容量的成本，即不考虑市场博弈。
+\item 各机组的出力变化在同一个时段(15min)内，是近似单调变化的，且变化率相对平稳。
+\item 各个发电机组出力相互独立，即出力不受其他机组影响。
+
+\end{enumerate}
+
+
+
+
+
+
+
+
+
+
+\section{符号说明}
+\begin{center}
+	\begin{longtable}{ccc}
+%		\caption{}
+%		\label{} \\
+		\toprule
+		\hline 
+	\rule{0pt}{15pt} 
+	\makebox[0.2\textwidth][c]{符号}	&  \makebox[0.4\textwidth][c]{意义} \\ \hline \rule{0pt}{15pt}
+	$P_{A}$	    & 预测下一时段所有机组总体负荷需求\\ \hline \rule{0pt}{15pt}
+	$P_{Ai}$	& 机组i在出力方案调整之前的出力值(i=1,2...8) \\ \hline \rule{0pt}{15pt}
+	$P_{Ai}^{*}$  & 机组i在出力方案调整之后的出力值(i=1,2...8) \\ \hline \rule{0pt}{15pt}
+	$P_{Ni}$     &机组i初始(即方案0)出力值(i=1,2...8)   \\ \hline \rule{0pt}{15pt}
+	$P_{ik}$	    & 机组i第k段的段容量(k=1,2...10)  \\ \hline \rule{0pt}{15pt}
+	$M_{ik}$	    & 机组i第k段的段价(k=1,2...10) \\ \hline \rule{0pt}{15pt}
+	$m_{i}{(s)}$         & 机组i在出力方案调整之前的报价函数(i=1,2...8) \\ \hline \rule{0pt}{15pt}
+	$m_{i}^{*}{(s)}$     & 机组i在出力方案调整之后的报价函数(i=1,2...8) \\ \hline \rule{0pt}{15pt}
+	$m$     & 清算价 \\ \hline \rule{0pt}{15pt}
+	B	    & 总阻塞费用  \\ \hline \rule{0pt}{15pt}
+	$B_{i}$ & 机组i序内阻塞费用 \\ \hline \rule{0pt}{15pt}
+	$B_{i}^{'}$ &机组i序外阻塞费用 \\ \hline \rule{0pt}{15pt}
+	$B_{*}$ &任务四中阻塞费用的简化表达式 \\ \hline \rule{0pt}{15pt}
+	M       & 各机组出力预案总费用 \\ \hline \rule{0pt}{15pt}
+	$M^{'}$  &机组处理方案调整后需要支付的总费用 \\ \hline \rule{0pt}{15pt}
+	$v_{i}$  &机组i爬坡速率(i=1,2...8)  \\ \hline \rule{0pt}{15pt}
+	$P_{j}^{'}$ &计算预案时线路j的有功潮流(j=1,2...6)\\ \hline \rule{0pt}{15pt}
+	$P_{Lj}$ &线路j的有功潮流限值(j=1,2...6) \\ \hline \rule{0pt}{15pt}
+	$\alpha_{j}$ &线路j的安全裕度(j=1,2...6) \\ \hline \rule{0pt}{15pt}
+	$\lambda_{i}^{j}$ &在0-1规划中第i个机组是否在第j时段是否出力的评价函数  \\ \hline \rule{0pt}{15pt}
+	$\theta_{i}$ &机组i的对补偿费用的满意度 \\ \hline \rule{0pt}{15pt}
+	$\beta_{j}$  &第j条线路的超限系数 \\ \hline \rule{0pt}{15pt}
+	$e_{i}$ &机组i的理想补偿费用 \\ \hline 
+		\bottomrule
+	\end{longtable}
+\end{center}
+
+
+\section{问题的分析}
+	\subsection{概念理解}
+	\begin{itemize}
+		\item 序内容量：通过竞价取得发电权的发电容量。即出力分配预案中，每台机组预订的出力。
+		\item 序外容量：在竞价中未取得发电权的发电容量。即出力分配预案中，每台机组未预订的出力。
+		\item 阻塞费用：包括两部分，一是对未发电序内容量部分进行补偿，二是对在低于对应报价的清算价发力的序外容量部分进行补偿。
+	\end{itemize}
+
+	
+	\subsection{流程分析}
+{\noindent 电力预测流程共有六步(如图1)：}\vspace{0.5em}
+
+\begin{figure}[!h]
+	\centering	%居中
+	\includegraphics[width=16cm,height=11cm]{1.3.PNG} %图片大小和名字
+	\caption{电力分配流程}
+\end{figure}
+
+	\begin{enumerate}[第1步]
+		\item 根据负荷预报、每台机组报价、每台机组当前出力、每台机组当前出力改变速率，从小到大确定每台机组的出力，形成出力分配预案。
+		\item 根据有功潮流关于每台机组出力的表达式，由出力分配预案，确定有功潮流。并将其与潮流限值比较，判断是否出现输电阻塞。如果出现，继续进行第3步；如果不出现则预案为最终方案。
+		\item 在每条线路的有功潮流值都低于潮流限值的前提下，调整分配预案。若可以得出新的方案，则进行第6步；若无法得出新的方案(规划问题无解)，则继续第4步。
+		\item 在保证每一条线路超出安全限度尽可能小的条件下，调整分配预案。若可以得出新的方案，则进行第6步；若无法得出新的方案(规划问题无解)，则继续进行第5步。
+		\item 在用户端进行拉闸限电，保证用电安全。
+		\item 得出最终方案，根据阻塞费用补偿规则，计算阻塞费用。\\
+	\end{enumerate}
+	
+	
+	\subsection{解题思路}
+	问题一让我们确定有功潮流的表达式，用于接下来判断是否出现输电阻塞。问题二让我们给出阻塞费用方案，以合理补偿序内未发电容量和序外发电容量(对序内和序外的解释见下图)。问题三则让我们确定出力分配预案。问题四让我们判断是否出现输电阻塞，并调整方案。问题五则给出一个负荷预报让我们给出最终方案。
+	
+	总体来看，我们只需要确定一个从负荷预报到最终方案整个流程的决策模型。就可以解决这五个问题。所以在接下来，我们将按照图一的流程对整个电力调度计划的制定进行建模，然后根据模型对题目所给的五个问题依次进行解答。
+
+\begin{enumerate}[第1步]\vspace{0.5em}
+	\item 速率确定出力分配预案。我们给出两种求解方案。第一，基于矩阵分析的0/1规划。第二，基于回溯思想的改进算法。
+	
+	\item 确定有功潮流关于每台机组出力的表达式。我们分别采用带常数项的多元线性拟合和不带常数项的多元线性拟合，并进行比较分析，得出最终拟合方案。
+	
+	\item 在每一条线路的有功潮流值小于安全限值的条件下调整方案。(线性规划)
+
+	\item 在每一条线路的有功潮流值使用安全裕度尽可能小的条件下调整方案。(多目标规划)
+
+	\item 由于在不同的地区，人口和市场分布有较大差异。这时最优的拉闸限电方案将有较大差异，又因为拉闸限电方案对其它流程也都没有影响，故在此我们不给出拉闸限电方案。
+
+	\item 给出阻塞费用的计算规则。我们分为两步，第一步得出初始补偿方案，确定总的赔偿费用。第二步在总的补偿费用不变的情况下，引入期望因子，进行分配调整。采用最大最小后悔值法，让最小的期望因子尽可能大，从而使得序内序外尽可能公平。
+\end{enumerate}
+	
+		
+\section{模型建立}
+	
+	\subsection{第一步}
+	\subsection*{方法一 \space  基于矩阵分析的0/1规划算法}
+	根据对题意的分析，我们可将问题看作是以清算价作为单价，在各机组一行的元素中选取一个元素，使得元素累加和不低于需求负荷。通过段容量以及段价的表格，我们将采取0-1决策模型，其中决策变量$\lambda_{i}^{j}$函数有如下表达式：
+	
+	$$ \lambda_{i}^{k}=\left\{
+	\begin{array}{rcl}
+		1       &      & {\text{机组i在j时段出力}}\\
+		0       &      & {\text{机组i没有在k时段出力}}\\
+	\end{array} \right. $$
+	
+	我们将$M_{i}^{*}$表示第i台机组的最高报价，则
+	\begin{equation}
+		M_{i}^{*}=\sum_{k=1}^{n} \lambda_{i}^{k} \times M_{ik} 
+	\end{equation}
+	
+	上述问题中n代表机组的段数。根据对清算价的理解，我们把i台机组的最高报价作为清算价，为了满足经济性需求，使得清算价达到最小，即$M_{i}^{*}$的最大值达到最小作为目标函数。
+	
+	\begin{equation*}
+		\begin{split}
+			{\bf min}\quad & max M_{i}^{*}\\
+			{\bf s.t}\quad &\sum_{i=1}^{n}P_{Ai} \ge P_{A}\\
+			&\sum_{j=1}^{n} \lambda_{i}^{k} =1\\
+			&P_{Ai} \le P_{Ni} + 15\times v_{i} \\
+			&P_{Ai} \ge P_{Ni} - 15\times v_{i} \\
+		\end{split}
+	\end{equation*}
+	
+	上述问题中n为机组总台数。
+	\subsection*{方法二 \space 基于回溯思想的改进算法}
+	
+	将每一台机组写成一棵决策树，每一个结点包含段价和累加之后的段容量。根据各机组当前出力以及爬坡速率计算出各机组的出力阈值。按段价由低到高选取各机组的可用段容量或其部分，直到它们之和等于预报的负荷。此时每个机组被选入的可用段容量或其部分之和形成该时段该机组的出力分配预案为止，记此时所有机组的最高报价为清算价。
+	
+	
+	\subsection{第二步}
+	
+	
+	我们分别采取带常数项的多元线性方程和不带常数项的多元线性方程对其进行拟合。如下：
+	
+	\begin{itemize}
+		\item {不带常数项的多元线性方程}
+		\begin{equation} 
+			y_{i}=\sum_{j=1}^{n} a_{i j} x_{\jmath}, \quad i=1,2, \cdots, n
+		\end{equation}
+		
+		\item {带常数项的多元线性方程}
+		
+		
+		\begin{equation} 
+			y_{i}=a_{i 0}+\sum_{j=1}^{n} a_{i j} x_{\jmath}, \quad i=1,2, \cdots, n
+		\end{equation}
+	\end{itemize}
+	
+	
+	回归平方和(SSR)与总离差平方和(SST)的比值$R^{2}$来判断模型拟合优度。$R^{2}$的计算公式如下：
+	\begin{equation} 
+		R^{2}=\frac{S S R}{S S T}=\frac{\sum_{i=1}^{n}\left(\hat{y}_{i}-\bar{y}\right)^{2}}{\sum_{i=1}^{n}\left(y_{i}-\bar{y}\right)^{2}}
+	\end{equation}
+	一般认为$R^{2}$超过0.8，则模型的拟合优度比较高。
+	
+	最后综合考虑实际意义、实际作用和模型目的，我们选择带常数项的多元线性方程作为每条线路有功潮流的表达式。
+	
+	\subsection{第三步}
+	根据第一步求出的各机组分配预案，和第二步中确定的线路潮流值与机组出力之间的函数关系式，可求出每条线路的潮流值。将其与潮流限值进行比较，判断各线路上的潮流值是否超过潮流限值，即是否出现输电阻塞。
+	
+	\begin{itemize}
+		\vspace{0.5em}
+		\item 如果没有出现阻塞管理则直接得到最终方案。
+		\vspace{0.5em}
+		\item 如果出现阻塞则进行下面的规划求解：
+		
+		\begin{equation*}
+			\begin{split}
+				{\bf min}\quad & B_{*}\\
+				{\bf s.t}\quad &\sum_{i=1}^{n}P_{Ai}^{*} \ge P_{A}\\
+				&P_{Ai}^{*} \le P_{Ni} + 15\times v_{i} \\
+				&P_{Ai}^{*} \ge P_{Ni} - 15\times v_{i} \\
+				&P_{j}^{*} \le P_{Lj} \\
+			\end{split}
+		\end{equation*}
+		
+	\end{itemize}
+
+其中$P_{Ai}^{*}$与$P_{j}^{*}$之间的关系可以运用第二步中拟合出来的函数求得,n为机组总台数。
+
+该规划问题若无解则进行第四步；若有解即为最终方案，直接进行第六步进行阻塞费用的计算。
+	
+	\subsection{第四步}
+	
+	引入警戒系数，所有线路潮流超过限制的百分比相对于安全裕度的最大值，记为$\delta$：
+	\begin{equation}
+		\delta = max{\frac{\beta_{j}}{\alpha_{j}}}
+	\end{equation}
+	
+	于是就可以做如下的双目标规划：
+	
+	\begin{equation*}
+		\begin{split}
+			{\bf min}\quad &\delta \\
+			{\bf min}\quad &B_{*}\\
+			{\bf s.t}\quad &\sum_{i=1}^{n}P_{Ai}^{*} \ge P_{A}\\
+			&P_{Ai}^{*} \le P_{Ni} + 15\times v_{i} \\
+			&P_{Ai}^{*} \ge P_{Ni} - 15\times v_{i} \\
+			&\beta_{j} <	\alpha_{j}\\
+		\end{split}
+	\end{equation*}
+	
+	上述问题中n为机组总台数。
+	
+	该规划问题若无解则进行第五步；若有解即为最终方案，直接进行第六步进行阻塞费用的计算。
+	
+	\subsection{第五步}
+	拉闸限电需要充分考虑用户侧，由于不同地区的用户分布和类型有较大区别，需要根据具体情况分析，故在此不给出具体解决方案。
+	
+	\subsection{第六步}
+	阻塞费用主要有两大部分：一是对未发电序内容量部分进行补偿，二是对在低于对应报价的清算价发力的序外容量部分进行补偿。
+	对序内部分赔偿其损失利润，对序外部分赔偿其损失成本，再对两者进行合并，则可得到每台机组的赔偿费用计算规则。
+	
+	\begin{equation}
+		B_{*}=\dfrac{1}{4} \int_{min{(P_{Ai},P_{Ai}^{*})}}^{max{(P_{Ai},P_{Ai}^{*})}} [|P_{Ai}-P_{Ai}^{*}|\times |m-m_{i}(s)|] ds
+		\label{1}
+	\end{equation}
+	
+	故总费用B就可以写成：
+	\begin{equation}
+		B=\sum_{i=1}^{n} B_{*}
+	\end{equation}
+	
+	
+	
+	\subsection*{改进计算方案}
+	
+	保持初步赔偿方案中确定的总阻塞费用B不变，引入期望因子$\theta_{i}$，对补偿结果进行微调。
+	\begin{equation}
+		\theta_{i} =\dfrac{x_{i}}{e_{i}}
+		\label{3}
+	\end{equation}
+	
+	其中$x_{i}$为每一台机组的初步补偿费用。$e_{i}$为第i台机组期望获得的补偿费用，在此以当前的报价作为期望补偿的单价，计算公式如下：
+	
+	\begin{equation}
+		e_{i}=|P_{Ai}^{*}-P_{Ai}|\times m_{i}^{*}
+		\label{4}
+	\end{equation}
+	
+	使得所有机组的最小满意度达到最大值，建立下面的规划问题：
+	
+	\begin{equation*}
+		\begin{split}
+			{\bf max}\quad &min \theta_{i}\\
+			{\bf s.t}\quad &B= \sum_{i=1}^{n}x_{i}\\
+		\end{split}
+	\end{equation*}
+	
+	上述问题中n为机组总台数，该问题解得的$x_{i}$即为对第i台机组的阻塞费用补偿。
+	
+\section{问题求解}
+	\subsection{问题一：确定有功潮流表达式}
+	由于整个电网的拓扑结构在这个过程中是不改变的，故我们只需要考虑各机组的发力对有功潮流的影响。即我们需要确定的表达式中，自变量共有8个，分别为8台机组的出力值。在此，为了得到通式和更好地表示函数关系，我们用x1,x2,x3,x4,x5,x6,x7,x8分别表示8台机组的出力值。
+	
+	\begin{figure}[!h]
+		\centering	%居中
+		\includegraphics[width=8cm,height=8cm]{3.2.PNG} %图片大小和名字
+		\caption{每条线路有功潮流和机组关系图}
+	\end{figure}
+
+	又因为每一条线路的有功潮流值受到8台机组的影响，故它们之间就构成了8 $\times$ 6的拓扑结构(如图2)。鉴于拓扑结构的复杂性(实际拓扑网络更复杂)，我们采用控制变量法，在其它机组出力不变的情况下，分别研究每一台机组的出力对每一条线路有功潮流的影响(如图3)。根据题目所给的表1(各机组出力方案)，以方案0作为实验组，从方案1开始，每4个方案作为一个组，与方案0对照分析。则我们可以将原本复杂的拓扑结构转化成48对关系，每一对关系有5组数据。
+	
+	\begin{figure}[!h]
+		\centering	%居中
+		\includegraphics[width=11cm,height=6cm]{3.3.PNG} %图片大小和名字
+		\caption{改进关系图}
+	\end{figure}
+	
+	
+	观察每一对关系中五组数据的变化规律，发现其大致呈线性分布,故我们选择采用线性函数对其进行拟合。因篇幅限制，我们仅给出关系1-1和2-2(如图4)，即第一条线路受第一台机组影响图像和第二条线路受第二台机组影响图像。
+	
+	\begin{figure}[!h]
+		\centering	%居中
+		\includegraphics[width=6cm,height=5cm]{1to1.PNG} %图片大小和名字
+		\includegraphics[width=6cm,height=5cm]{2to2.PNG}
+		\caption{关系1-1(左) 关系2-2(右)}
+	\end{figure}
+	
+	根据上述分析我们分别采取带常数项的多元线性方程和不带常数项的多元线性方程对其进行拟合。如下：
+
+	\subsubsection*{不带常数项的多元线性方程}
+	\begin{equation} 
+		y_{i}=\sum_{j=1}^{8} a_{i j} x_{\jmath}, \quad i=1,2, \cdots, 6
+	\end{equation}
+	利用matlab进行线性回归求解,可得：
+	
+	% Please add the following required packages to your document preamble:
+	% \usepackage{booktabs}
+	% \usepackage{longtable}
+	% Note: It may be necessary to compile the document several times to get a multi-page table to line up properly
+	\begin{longtable}{@{}llllll@{}}
+		&
+		\textbf{a1} &
+		\textbf{a2} &
+		\textbf{a3} &
+		\textbf{a4} &
+		\textbf{a5} \\* \cmidrule(l){2-6} 
+		\endfirsthead
+		%
+		\endhead
+		%
+		\multicolumn{1}{l|}{\textbf{线路1}} &
+		\multicolumn{1}{l|}{0.195331} &
+		\multicolumn{1}{l|}{0.330152} &
+		\multicolumn{1}{l|}{0.141896} &
+		\multicolumn{1}{l|}{0.243629} &
+		\multicolumn{1}{l|}{0.105608} \\* \cmidrule(l){2-6} 
+		\multicolumn{1}{l|}{\textbf{线路2}} &
+		\multicolumn{1}{l|}{0.079281} &
+		\multicolumn{1}{l|}{0.463218} &
+		\multicolumn{1}{l|}{0.105776} &
+		\multicolumn{1}{l|}{0.180448} &
+		\multicolumn{1}{l|}{0.242766} \\* \cmidrule(l){2-6} 
+		\multicolumn{1}{l|}{\textbf{线路3}} &
+		\multicolumn{1}{l|}{-0.18058} &
+		\multicolumn{1}{l|}{-0.21659} &
+		\multicolumn{1}{l|}{-0.2444} &
+		\multicolumn{1}{l|}{-0.13202} &
+		\multicolumn{1}{l|}{-0.00486} \\* \cmidrule(l){2-6} 
+		\multicolumn{1}{l|}{\textbf{线路4}} &
+		\multicolumn{1}{l|}{0.044559} &
+		\multicolumn{1}{l|}{0.095603} &
+		\multicolumn{1}{l|}{0.267633} &
+		\multicolumn{1}{l|}{0.066068} &
+		\multicolumn{1}{l|}{0.080231} \\* \cmidrule(l){2-6} 
+		\multicolumn{1}{l|}{\textbf{线路5}} &
+		\multicolumn{1}{l|}{0.136152} &
+		\multicolumn{1}{l|}{0.583114} &
+		\multicolumn{1}{l|}{0.042655} &
+		\multicolumn{1}{l|}{0.107995} &
+		\multicolumn{1}{l|}{0.092773} \\* \cmidrule(l){2-6} 
+		\multicolumn{1}{l|}{\textbf{线路6}} &
+		\multicolumn{1}{l|}{0.360872} &
+		\multicolumn{1}{l|}{0.248198} &
+		\multicolumn{1}{l|}{0.019409} &
+		\multicolumn{1}{l|}{0.228297} &
+		\multicolumn{1}{l|}{0.19027} \\* \cmidrule(l){2-6} 
+	\end{longtable}
+
+\newpage
+
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+% \usepackage{longtable}
+% Note: It may be necessary to compile the document several times to get a multi-page table to line up properly
+\begin{longtable}{@{}lllll@{}}
+	& \textbf{a6}                   & \textbf{a7}                   & \textbf{a8}                   & \textbf{$R^{2}$}                 \\* \cmidrule(l){2-5} 
+	\endfirsthead
+	%
+	\endhead
+	%
+	\multicolumn{1}{l|}{\textbf{线路1}} & \multicolumn{1}{l|}{0.321788} & \multicolumn{1}{l|}{0.056911} & \multicolumn{1}{l|}{0.13307}  & \multicolumn{1}{l|}{0.7307} \\* \cmidrule(l){2-5} 
+	\multicolumn{1}{l|}{\textbf{线路2}} & \multicolumn{1}{l|}{0.125252} & \multicolumn{1}{l|}{-0.09587} & \multicolumn{1}{l|}{0.258509} & \multicolumn{1}{l|}{0.6213} \\* \cmidrule(l){2-5} 
+	\multicolumn{1}{l|}{\textbf{线路3}} & \multicolumn{1}{l|}{-0.19508} & \multicolumn{1}{l|}{0.061319} & \multicolumn{1}{l|}{-0.33395} & \multicolumn{1}{l|}{0.8008} \\* \cmidrule(l){2-5} 
+	\multicolumn{1}{l|}{\textbf{线路4}} & \multicolumn{1}{l|}{0.146293} & \multicolumn{1}{l|}{0.099492} & \multicolumn{1}{l|}{0.170886} & \multicolumn{1}{l|}{0.875}  \\* \cmidrule(l){2-5} 
+	\multicolumn{1}{l|}{\textbf{线路5}} & \multicolumn{1}{l|}{0.311197} & \multicolumn{1}{l|}{-0.08222} & \multicolumn{1}{l|}{0.152995} & \multicolumn{1}{l|}{0.6036} \\* \cmidrule(l){2-5} 
+	\multicolumn{1}{l|}{\textbf{线路6}} & \multicolumn{1}{l|}{0.218632} & \multicolumn{1}{l|}{0.09519}  & \multicolumn{1}{l|}{0.147604} & \multicolumn{1}{l|}{0.7797} \\* \cmidrule(l){2-5} 
+\end{longtable}
+	
+	\subsubsection*{带常数项的多元线性方程}
+	\begin{equation} 
+	y_{i}=a_{i 0}+\sum_{j=1}^{8} a_{i j} x_{\jmath}, \quad i=1,2, \cdots, 6
+	\end{equation}
+	利用matlab进行线性回归求解,可得：
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+% \usepackage{longtable}
+% Note: It may be necessary to compile the document several times to get a multi-page table to line up properly
+\begin{longtable}{@{}crrrrrr@{}}
+	&
+	\multicolumn{1}{c}{\textbf{a0}} &
+	\multicolumn{1}{c}{\textbf{a1}} &
+	\multicolumn{1}{c}{\textbf{a2}} &
+	\multicolumn{1}{c}{\textbf{a3}} &
+	\multicolumn{1}{c}{\textbf{a4}} &
+	\multicolumn{1}{c}{\textbf{a5}} \\* \cmidrule(l){2-7} 
+	\endfirsthead
+	%
+	\endhead
+	%
+	\multicolumn{1}{c|}{\textbf{线路1}} &
+	\multicolumn{1}{r|}{110.2965} &
+	\multicolumn{1}{r|}{0.082841} &
+	\multicolumn{1}{r|}{0.048279} &
+	\multicolumn{1}{r|}{0.052971} &
+	\multicolumn{1}{r|}{0.119934} &
+	\multicolumn{1}{r|}{-0.02544} \\* \cmidrule(l){2-7} 
+	\multicolumn{1}{c|}{\textbf{线路2}} &
+	\multicolumn{1}{r|}{131.2289} &
+	\multicolumn{1}{r|}{-0.05456} &
+	\multicolumn{1}{r|}{0.127851} &
+	\multicolumn{1}{r|}{-2.6E-05} &
+	\multicolumn{1}{r|}{0.033277} &
+	\multicolumn{1}{r|}{0.086847} \\* \cmidrule(l){2-7} 
+	\multicolumn{1}{c|}{\textbf{线路3}} &
+	\multicolumn{1}{r|}{-108.873} &
+	\multicolumn{1}{r|}{-0.06954} &
+	\multicolumn{1}{r|}{0.061645} &
+	\multicolumn{1}{r|}{-0.15662} &
+	\multicolumn{1}{r|}{-0.00992} &
+	\multicolumn{1}{r|}{0.124494} \\* \cmidrule(l){2-7} 
+	\multicolumn{1}{c|}{\textbf{线路4}} &
+	\multicolumn{1}{r|}{77.48168} &
+	\multicolumn{1}{r|}{-0.03446} &
+	\multicolumn{1}{r|}{-0.10241} &
+	\multicolumn{1}{r|}{0.205164} &
+	\multicolumn{1}{r|}{-0.02083} &
+	\multicolumn{1}{r|}{-0.01183} \\* \cmidrule(l){2-7} 
+	\multicolumn{1}{c|}{\textbf{线路5}} &
+	\multicolumn{1}{r|}{132.9745} &
+	\multicolumn{1}{r|}{0.000533} &
+	\multicolumn{1}{r|}{0.243286} &
+	\multicolumn{1}{r|}{-0.06455} &
+	\multicolumn{1}{r|}{-0.04113} &
+	\multicolumn{1}{r|}{-0.06522} \\* \cmidrule(l){2-7} 
+	\multicolumn{1}{c|}{\textbf{线路6}} &
+	\multicolumn{1}{r|}{120.6633} &
+	\multicolumn{1}{r|}{0.237809} &
+	\multicolumn{1}{r|}{-0.06017} &
+	\multicolumn{1}{r|}{-0.07787} &
+	\multicolumn{1}{r|}{0.092975} &
+	\multicolumn{1}{r|}{0.046904} \\* \cmidrule(l){2-7} 
+\end{longtable}
+	
+	
+% Please add the following required packages to your document preamble:
+% \usepackage{booktabs}
+% \usepackage{longtable}
+% Note: It may be necessary to compile the document several times to get a multi-page table to line up properly
+\begin{longtable}{@{}crrrr@{}}
+	&
+	\multicolumn{1}{l}{\textbf{a6}} &
+	\multicolumn{1}{l}{\textbf{a7}} &
+	\multicolumn{1}{l}{\textbf{a8}} &
+	\multicolumn{1}{l}{\textbf{$R^2$}} \\* \cmidrule(l){2-5} 
+	\endfirsthead
+	%
+	\endhead
+	%
+	\multicolumn{1}{c|}{\textbf{线路1}} &
+	\multicolumn{1}{r|}{0.122011} &
+	\multicolumn{1}{r|}{0.121576} &
+	\multicolumn{1}{r|}{-0.00123} &
+	\multicolumn{1}{r|}{0.99951} \\* \cmidrule(l){2-5} 
+	\multicolumn{1}{c|}{\textbf{线路2}} &
+	\multicolumn{1}{r|}{-0.11244} &
+	\multicolumn{1}{r|}{-0.01893} &
+	\multicolumn{1}{r|}{0.098726} &
+	\multicolumn{1}{r|}{0.999602} \\* \cmidrule(l){2-5} 
+	\multicolumn{1}{c|}{\textbf{线路3}} &
+	\multicolumn{1}{r|}{0.002117} &
+	\multicolumn{1}{r|}{-0.00251} &
+	\multicolumn{1}{r|}{-0.20139} &
+	\multicolumn{1}{r|}{0.999871} \\* \cmidrule(l){2-5} 
+	\multicolumn{1}{c|}{\textbf{线路4}} &
+	\multicolumn{1}{r|}{0.005953} &
+	\multicolumn{1}{r|}{0.144918} &
+	\multicolumn{1}{r|}{0.076546} &
+	\multicolumn{1}{r|}{0.999888} \\* \cmidrule(l){2-5} 
+	\multicolumn{1}{c|}{\textbf{线路5}} &
+	\multicolumn{1}{r|}{0.070343} &
+	\multicolumn{1}{r|}{-0.00426} &
+	\multicolumn{1}{r|}{-0.00891} &
+	\multicolumn{1}{r|}{0.999588} \\* \cmidrule(l){2-5} 
+	\multicolumn{1}{c|}{\textbf{线路6}} &
+	\multicolumn{1}{r|}{7.81E-05} &
+	\multicolumn{1}{r|}{0.165933} &
+	\multicolumn{1}{r|}{0.000687} &
+	\multicolumn{1}{r|}{0.999835} \\* \cmidrule(l){2-5} 
+\end{longtable}
+
+	
+	记a0\~{}a8列所构成的6行8列的矩阵为A，则拟合的带常数项的多元线性方程为：
+	\begin{equation} 
+	Y=AX+a_{0}
+	\end{equation}
+	其中$$Y=(y1,y2,y3,y4,y5,y6)',X=(x1,x2,x3,x4,x5,x6,x7,x8)'$$
+	
+	表中$R^{2}$为回归平方和(SSR)与总离差平方和(SST)的比值，介于0~1之间。其表示总离差平方和中可以由回归平方和解释的比例。这一比例越接近1，模型越精确，回归效果越显著。一般认为$R^{2}$超过0.8的模型拟合优度比较高。
+%	$R^{2}=\frac{回 归 平 方 和}{总 离 差 平 方 和}$
+	
+	\begin{equation} 
+	R^{2}=\frac{S S R}{S S T}=\frac{\sum_{i=1}^{n}\left(\hat{y}_{i}-\bar{y}\right)^{2}}{\sum_{i=1}^{n}\left(y_{i}-\bar{y}\right)^{2}}
+	\end{equation}
+
+
+	分别对六条线路的拟合方程求$R^{2}$，附于表尾。我们发现，六个方程的相关系数$R^{2}$都大于0.9995，说明拟合程度非常好，能较真实反应各线路关于各机组的关系。
+	~\\
+	~\\
+	综合来看两种方法：
+	
+	从实际意义出发，由于电网中没有机组出力，就不会有潮流，因此不应该有常数项。但是从目的和实际作用出发，我们确定有功潮流关于发电机组出力的表达式，是为了更精准的得到出力分配预案所对应的每条线路的潮流值，从而对预案进行优化调整。
+	
+	通过以上分析，我们发现前者的优点是对现实的解释更合理，而后者的优点是对未来的预测更精准。鉴于数学模型是为了更好的解决实际问题，故我们选择带常数项的拟合方程作为每条线路有功潮流的表达式。
+	
+	\subsection{问题二：给出阻塞费用计算规则}
+
+阻塞费用主要有两大部分：一是对未发电序内容量部分进行补偿，二是对在低于对应报价的清算价发力的序外容量部分进行补偿。考虑公平、经济、简明合理的要求，结合市场规则，我们分别对两大部分分析。
+
+此外，整个计算流程我们分为两步进行：
+
+\textit{第一步:}首先进行阻塞费用的计算，通过对具有序内容量与序外容量的机组分别按照不同的赔偿规则建立对应的阻塞函数表达式，将可以得到一个初步补偿预案。
+
+\textit{第二步:}为了更加公平地对待序内和序外，在保持初步补偿方案确定的总阻塞费用不变的前提下，对第一步得到的各机组赔偿费用进行进一步调整。引入期望因子，保证各机组对赔偿费用的期望度在尽可能相等的情况下达到最大,进而得到最终的阻塞费用计算规则。
+	\begin{figure}[!h]
+	\centering	%居中
+	\includegraphics[width=6cm,height=5cm]{4.1.PNG} %图片大小和名字
+	\caption{发电机组成本和阻塞示意图}
+\end{figure}
+
+\subsubsection*{初步计算方案}
+
+\begin{itemize}
+	\vspace{0.5em}
+	\item 考虑序内阻塞费用:
+	
+	\vspace{0.5em}
+	在调整出力分配预案后，机组的出力由$P_{Ai}$变为$P_{Ai}^{*}$。导致部分通过竞价获得发电权的序内容量不能出力。此时,其利润损失如图5所示。
+	
+	由于在$P_{Ai}^{*}$\~{}$P_{Ai}$区域内，该机组实际并未出力，因此其并未产生成本。故网方只需赔偿，由于网方违背市场规则而使得该机组少获得的利润，即利润损失部分。以$m-m_{i}{(s)}$作为单位长度的补偿单价,就可以得到下面的算式：
+	
+	\begin{equation}
+		B_{i}=\dfrac{1}{4} \int_{P_{Ai}^{*}}^{P_{Ai}} [(P_{Ai}-P_{Ai}^{*})\times (m-m_{i}(s))] ds
+		\label{1}
+	\end{equation}
+	
+	其中，$B_{i}$为序内补偿费用；$m$表示清算价；$m_{i}{(s)}$表示出力为s时的对应报价；$\dfrac{1}{4}$的单位是小时,表示15分钟。
+	
+	\vspace{0.5em}
+		\begin{figure}[!h]
+		\centering	%居中
+		\includegraphics[width=6cm,height=5cm]{4.2.PNG} %图片大小和名字
+		\includegraphics[width=6cm,height=5cm]{4.3.PNG} %图片大小和名字	
+		\caption{调整后序内变化(左)和序外变化(右)}
+	\end{figure}
+	
+	\item 考虑序外阻塞费用：
+	
+	\vspace{0.5em}
+	在调整出力分配预案后，机组的出力由$P_{Ai}$变为$P_{Ai}^{*}$。导致部分未通过竞价获得发电权的序外容量能以低于其报价的清算价出力。此时,其成本损失如图6所示。
+	
+	由于在$P_{Ai}$\~{}$P_{Ai}^{*}$区域内，该机组实际出力，但其并初始结算价，并不能让其多出力部分收回成本。故网方应该补全序外多出力部分成本，即成本损失部分。以$m_{i}{(s)-m}$作为单位长度的补偿单价,就可以得到下面的算式：
+	
+	\begin{equation}
+		B_{i}^{'}=\dfrac{1}{4} \int_{P_{Ai}}^{P_{Ai}^{*}} [(P_{Ai}^{*}-P_{Ai})\times (m_{i}^{*}(s)-m)] ds
+		\label{2}
+	\end{equation}
+	
+\end{itemize}
+
+比较发现两式具有形式一致性，故可以合并写成：
+\begin{equation}
+	B_{*}=\dfrac{1}{4} \int_{min{(P_{Ai},P_{Ai}^{*})}}^{max{(P_{Ai},P_{Ai}^{*})}} [|P_{Ai}-P_{Ai}^{*}|\times |m-m_{i}(s)|] ds
+	\label{1}
+\end{equation}
+
+
+此外，对于方案调整前后未产生序内或序外容量的机组，网方的赔偿价格为0。那么对于全部机组，网方需要进行赔偿的阻塞费用可以表示为
+
+\begin{equation}
+	B=\sum_{i=1}^{8} B_{*}
+	\label{3}
+\end{equation}
+
+在此，记每一台机组的初步补偿费用为$x_{i}$。
+
+
+\subsubsection*{改进计算方案}
+
+在初步补偿方案中，我们已经保证序内之间相互公平，序外之间相互公平。但是，我们对序内是保证它的利润不变，对序外只是保证他多出力部分的成本不亏。显然，序内和序外相比，并不公平。同时我们又考虑到网方利益，故我们保持初步赔偿方案中确定的总阻塞费用B不变，引入期望因子$\theta_{i}$，将序内赔偿费用稍微降低，序外赔偿费用稍微升高，使得对两者的赔偿尽可能地公平。
+
+\begin{equation}
+	\theta_{i} =\dfrac{x_{i}}{e_{i}}
+	\label{3}
+\end{equation}
+
+	其中$x_{i}$为每一台机组的初步补偿费用。$e_{i}$为第i台机组期望获得的补偿费用，在此，以当前的报价作为期望补偿的单价，计算公式如下：
+
+\begin{equation}
+		e_{i}=|P_{Ai}^{*}-P_{Ai}|\times m_{i}^{*}
+		\label{4}
+\end{equation}
+	
+通过以上分析，我们只需保证初始补偿方案中总阻塞费用B不变，使得所有机组的最小满意度达到最大值，即保证了每一个机组的满意度都在一个可接受的阈值内。
+
+于是可得下面的规划问题：
+
+\begin{equation*}
+	\begin{split}
+		{\bf max}\quad &min \theta_{i}\\
+		{\bf s.t}\quad &B= \sum_{i=1}^{8}x_{i}\\
+	\end{split}
+\end{equation*}
+
+该问题的最优解，所对应的$x_{i}$\space(i=1,2,3,4,5,6,7,8)即为最终对第i台机组的阻塞费用补偿。
+
+
+
+
+
+	\subsection{问题三：负荷需求为982.4MW，确定出力分配预案}	
+	
+	\subsubsection*{方法一 \space  基于矩阵分析的0/1规划算法}
+	通过段容量以及段价的表格，我们可以经过段容量的累加得到下列矩阵：
+	\begin{equation}       
+	\left(                 
+	\begin{array}{cccccccccc}
+	70&70& 120 & 120 &120&150&150&150&150&190 \\
+	30&30 &50 &58 &73&79 &81&81&81&89\\
+	110&110 &150 &150  &180&180&200&240&240&280  \\
+	55&60 & 70& 80  &90&100&115&115&115&116\\
+	75&80 &95& 95  & 110&125&125&135&145&155\\
+	95&95&105&125&125&140&150&170&170&180\\
+	50&65&70&85&95&105&110&120&123&125\\
+	70&70&90&90&110&110&139&140&155&160\\
+	\end{array}
+	\right)                 
+	\end{equation}
+
+	其中，每一列代表当前段的累加容量，每一行代表机组。
+	
+	 我们将采取0-1决策模型，其中决策变量$\lambda_{i}^{j}$函数有如下表达式：
+	
+	$$ \lambda_{i}^{k}=\left\{
+	\begin{array}{rcl}
+		1       &      & {\text{机组i在k时段出力}}\\
+		0       &      & {\text{机组i没有在k时段出力}}\\
+	\end{array} \right. $$
+	
+	我们将$M_{i}^{*}$表示第i台机组的最高报价，则
+	\begin{equation}
+		M_{i}^{*}=\sum_{k=1}^{10} \lambda_{i}^{k} \times M_{ik} 
+	\end{equation}
+	
+	根据对清算价的理解，我们把i台机组的最高报价作为清算价，为了满足经济性需求，使得清算价达到最小，即$M_{i}^{*}$的最大值达到最小作为目标函数。
+	\begin{equation*}
+		\begin{split}
+			{\bf min}\quad & max M_{i}^{*}\\
+			{\bf s.t}\quad &\sum_{i=1}^{8}P_{Ai} \ge P_{A}\\
+			&\sum_{j=1}^{10} \lambda_{i}^{j} =1\\
+			&P_{Ai} \le P_{Ni} + 15\times v_{i} \\
+			&P_{Ai} \ge P_{Ni} - 15\times v_{i} \\
+		\end{split}
+	\end{equation*}
+	
+	上述规划问题中$P_{A}$即题中的总体负荷需求即982.4MW,$P_{Ai}$即为所求的各机组分配预案。$P_{Ni}$为机组i初始时刻的出力值，即各机组方案0所对应的出力值，$v_{i}$为机组i的爬坡速率，运用这两个不等式约束条件充分考虑各机组能够出力的阈值，进而确定各机组能够出力的范围。
+	
+	通过对上述问题调用matlab中线性规划问题进行求解，输入预报负荷需求$P_{A}$=982.4MW，将会得到各机组分配预案：
+	
+	
+	
+	
+	
+	
+	\begin{table}[htbp]
+	\begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+		\hline
+		{}    & {机组1} & {机组2} & {机组3} & {机组4} & {机组5} & {机组6} & {机组7} & {机组8} \\ \hline
+		{出力}  & 150          & 79           & 180          & 99.5         & 125          & 140          & 95           & 113.9        \\ \hline
+		{清算价} & \multicolumn{8}{c|}{303}                                                                                              \\ \hline
+	\end{tabular}
+	\end{table}
+
+我们将得到的分配预案代入任务一拟合的有功潮流的表达式以备任务四中判断此预案是否超过各线路潮流限值，得到各线路潮流值如下表所示：
+
+\vspace{1em}
+
+\begin{adjustbox}{center}
+%\begin{table}[hbtp]
+	\begin{tabular}{|c|c|c|c|c|c|c|}
+		\hline
+		\centering
+		& {线路1} & {线路2} & {线路3} & {线路4} & {线路5} & {线路6} \\ \hline
+		{潮流值} & 173.3164 &141.0129&-150.9312& 120.9198& 136.8368& 168.5309      \\ \hline
+	\end{tabular}
+%\end{table}
+\end{adjustbox}
+
+
+	\subsubsection*{方法二 \space 基于回溯思想的改进算法}
+	
+	采用回溯思想来确定清算价主要有以下六步：\vspace{0.5em}
+	\begin{enumerate}[第 1 步:]
+		\item 首先我们把每一个机组的段容量进行累加，得到累加矩阵：
+		
+		\item 我们把每一个机组，按照回溯法的思想，根据段容量选择与否，做一颗决策树(如图7)。
+		\item 我们按照爬坡速率的约束，对每一棵树选到其最大的出力值所对应的段。每棵树仅取一个段，即一个节点。该节点对应一个段容量w和一个报价v。 
+		\item 如果每一台机组所找到的w之和大于负荷预报，则对每一台机组所找到的最大的v进行回溯。
+		\item 如果回溯到小于第二大的v时是，再取当时最大的v进行回溯。直到所有的w之和等于负荷预报。
+		\item 此时，得到的每一棵树的w即为对应机组的出力值，得到的每一棵树的v极为对应机组的报最高报价，其中最大的v即为清算价。\\
+	\end{enumerate}
+
+	\begin{figure}[!h]
+		\centering	%居中
+		\includegraphics[width=13cm,height=4cm]{6.3.PNG} %图片大小和名字
+		\caption{一台机组对应的决策树}
+	\end{figure}
+		
+	\subsection{问题四：根据上述分配预案，确定最终方案}	
+	根据问题三中求出的各机组分配预案，由问题一中确定的线路潮流值与机组出力之间的函数关系式，可求出每条线路的潮流值，各线路的当前潮流值表格已在问题三中给出。将其与潮流限值进行比较，判断各线路上的潮流值是否超过潮流限值，即是否出现输电阻塞。如果出现阻塞则进行如下阻塞管理流程，如果没有出现阻塞管理则直接得到最终方案。
+	
+	我们通过比较发现，有部分线路当前潮流值超过潮流限值，所以会发生输电阻塞，将进入如下阻塞管理流程。
+	
+	\begin{figure}[!h]
+		\centering	%居中
+		\includegraphics[width=14cm,height=5cm]{5.1.PNG} %图片大小和名字
+		\caption{阻塞管理流程图}
+	\end{figure}
+	
+	\subsubsection*{调整方案，消除阻塞}
+	在出现输电阻塞的情况下，为了使网方赔偿最少，我们以阻塞费用达到最小作为目标。由于在此我们只考虑总阻塞费用最小，故我们可以直接使用问题二第一步中$B_{*}$的表达式。
+		
+		\begin{equation}
+		B_{*}=\dfrac{1}{4} \int_{min{(P_{Ai},P_{Ai}^{*})}}^{max{(P_{Ai},P_{Ai}^{*})}} [|P_{Ai}-P_{Ai}^{*}|\times |m-m_{i}(s)|] ds
+		\label{1}
+		\end{equation}
+	
+	为尽可能地满足各线路的安全性，我们首先保证调整后各线路潮流值均不超过潮流限值。于是上述问题将转化为使得阻塞费用达到最小的单目标规划问题：
+	
+	\begin{equation*}
+		\begin{split}
+			{\bf min}\quad & B_{*}\\
+			{\bf s.t}\quad &\sum_{i=1}^{8}P_{Ai}^{*} = P_{A}\\
+			&P_{Ai}^{*} \le P_{Ni} + 15\times v_{i} \\
+			&P_{Ai}^{*} \ge P_{Ni} - 15\times v_{i} \\
+			&P_{j}^{*} \le P_{Lj} \\
+		\end{split}
+	\end{equation*}
+	
+	其中$P_{Ai}^{*}$与$P_{j}^{*}$之间的关系可以运用第一问中拟合出来的函数求得。上述规划问题中$P_{Ai}^{*}$指方案调整后机组i的出力值，$P_{Ni}$为机组i初始时刻的出力值，即各机组方案0所对应的出力值，$v_{i}$为机组i的爬坡速率，运用这两个不等式约束条件充分考虑各机组能够出力的阈值，进而确定各机组能够出力的范围。
+	
+	通过上述规划问题我们可以得到调整之后各机组的出力值，得到较优的调整方案及清算价为：
+		\begin{table}[htbp]
+		\begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+			\hline
+			{机组} & {1} & {2} & {3} & {4} & {5} & {6} & {7} & {8} \\
+			\hline
+			{调整} & 152.9999     & 88           & 227.9969     & 80           & 151.3886     & 95.0035      & 70.0113      & 116.9997 \\
+			\hline
+			{清算价} & \multicolumn{8}{c|}{489}                                                                                              \\ \hline 
+		\end{tabular}
+	\end{table}
+
+	此时相应的各线路潮流值为：
+	
+	
+	\vspace{1em}
+	
+	\begin{adjustbox}{center}
+	%\begin{table}[hbtp]
+		\begin{tabular}{|c|c|c|c|c|c|c|}
+			\hline
+			\centering
+			& {线路1} & {线路2} & {线路3} &{线路4} & {线路5} &{线路6} \\ \hline
+			{潮流值} & 165          & 149.4799     & -155.2802    & 126.1841     & 131.9243     & 160.242      \\ \hline
+		\end{tabular}
+%	\end{table}
+	\end{adjustbox}
+
+\vspace{1em}
+
+
+	此时所有机组均未超过潮流限值，即可以通过调整机组方案使得调整后所有机组均未超过潮流限值，上述所得方案即为问题四最终调整出力方案。根据任务二的阻塞费用计算原则，我们可以计算出总阻塞费用为4751.75。
+
+	\subsubsection*{调整方案，使用安全裕度尽量小}
+	如果无法通过调整机组方案使得调整后所有机组均未超过潮流限值，我们只能退而求其次，使得调整后各线路使用安全裕度尽可能小。为量化各线路的安全性，我们定义第j条线路潮流超过限值的百分比函数为超限系数，记为$\beta_{j}$，第j条线路超限系数$\beta_{j}$的表达式为：
+	\[ \beta_{j}=
+	\begin{cases}
+		0       &      \text { $P_{j}^{'}$  $\le$ 	$P_{Lj}$ } \\
+		\frac{P_{j}^{'}}{ P_{Lj}}  -1     &      \text {$P_{j}^{'}$ > $P_{Lj}$} \\
+	\end{cases} \] 
+
+	其中，$P_{j}^{'}$当前第j条线路的潮流值。$P_{Lj}$为第j条线路的潮流限值。
+
+	为了更好地考虑安全裕度，我们进一步引入警戒系数，将各线路安全裕度作为分母，对应超限系数作为分子，记为$\delta$：
+	\begin{equation}
+		\delta = max{\frac{\beta_{j}}{\alpha_{j}}}
+	\end{equation}
+	
+	警戒系数$\delta$指的是所有线路潮流超过限制的百分比相对于安全裕度的最大值。当 $\delta$ 尽可能小时，即保证所有线路超过限值部分占该线路安全裕度的百分比足够小，可以作为安全性的目标函数。于是就可以得到如下的双目标规划问题模型：
+	
+	\begin{equation*}
+		\begin{split}
+			{\bf min}\quad &\delta \\
+			{\bf min}\quad &B_{*}\\
+			{\bf s.t}\quad &\sum_{i=1}^{8}P_{Ai}^{*} = P_{A}\\
+			&P_{Ai}^{*} \le P_{Ni} + 15\times v_{i} \\
+			&P_{Ai}^{*} \ge P_{Ni} - 15\times v_{i} \\
+			&\beta_{j} <	\alpha_{j}\\
+		\end{split}
+	\end{equation*}
+	
+	上述规划问题中$P_{Ai}^{*}$指方案调整后机组i的出力值，$P_{Ni}$为机组i初始时刻的出力值，即各机组方案0所对应的出力值，$v_{i}$为机组i的爬坡速率，运用这两个不等式约束条件充分考虑各机组能够出力的阈值，进而确定各机组能够出力的范围。$\beta_{i}$指第j条线路潮流超过限值的百分比函数即超限系数，$\alpha_{j}$指第j条线路的安全裕度。
+
+	\subsection{问题五：负荷需求为1052.8MW，确定出力分配预案}	我们首先将
+	对于问题五的分析，我们首先将负荷需求1052.8MW代入问题三的规划模型中，求出各机组分配预案：
+	
+\vspace{1em}
+	\begin{adjustbox}{center}
+	%\begin{table}[htbp]
+		\begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+			\hline
+			\textbf{}    & {机组1} & {机组2} & {机组3} & {机组4} & {机组5} & {机组6} & {机组7} &{机组8} \\ \hline
+			{出力}  & 150          & 81           & 218.2          & 99.5         & 135          & 150          & 102.1           & 117        \\ \hline
+			{清算价} & \multicolumn{8}{c|}{303}                                                                                              \\ \hline
+		\end{tabular}
+	%\end{table}
+	\end{adjustbox}
+\vspace{1em}
+	
+	我们发现此问题中无法通过调整机组方案使得调整后所有机组均未超过潮流限值，我们只能退而求其次，使得调整后各线路使用安全裕度尽可能小，代入多目标规划模型，将得到调整后的出力方案以及清算价：
+	
+\vspace{1em}
+
+	\begin{adjustbox}{center}
+%		\begin{table}[htbp]
+		\begin{tabular}{|c|c|c|c|c|c|c|c|c|}
+			\hline
+			& {机组1} & {机组2} & {机组3} & {机组4} & {机组5} & {机组6} &{机组7} & {机组8} \\
+			\hline
+			{调整} & 153    & 87.9971           & 228     & 99.5           & 152     & 113.2152      & 102.0877      & 117 \\
+			\hline
+			{清算价} & \multicolumn{8}{c|}{489}                                                                                              \\ \hline 
+		\end{tabular}
+%	\end{table}
+	\end{adjustbox}
+
+\vspace{1em}
+
+	根据任务二的阻塞费用计算原则，我们可以计算出总阻塞费用为2680.5。
+
+
+
+
+\section{模型优缺点}
+
+{\noindent {优点：}
+\vspace{0.5em}
+\begin{itemize}
+	\item 对整个流程进行了可视化并建模，易于理解且具有较强的可迁移性。
+	\item 比较分析了带常数项和不带常数项的多元线性方程的拟合情况。
+	\item 在阻塞费用计算规则制定过程中，我们充分考虑了网方、序内、序外三方利益，通过引入期望因子，给出了一个尽可能公平合理的方案。
+	\item 采用了基于矩阵分析的0/1规划算法和基于回溯思想的改进算法对出力分配预案进行确定。前者虽然易于理解，但算法实现稍有复杂。后者算法实现则非常简易。
+	\item 引入警戒系数，并使其作为目标，更充分合理的考虑了安全裕度的限制。
+\end{itemize}
+\vspace{0.5em}
+{\noindent {缺点：}
+	\vspace{0.5em}
+	\begin{itemize}
+		\item 没有考虑市场博弈行为，直接将报价作为成本 。
+		\item 没有结合特定的电力市场环境进行分析(例如pool模式)。
+		\item 为了取得更优解，所以我们对多个问题进行的分步求解，不够简洁。
+		\item 没有给出拉闸限电的解决方案。
+	\end{itemize}
+\vspace{0.5em}
+
+
+\section{参考文献}
+[1]康霁欣. 基于改进模拟退火算法的电力系统输电阻塞成本控制[D].东北大学,2012.
+
+[2]杨超, 何书前, 郑志群, 等. 回溯法与分枝限界法的分析与比较[J]. 电脑知识与技术, 2018, 11.
+
+[3]杨洪明,段献忠,何仰赞.阻塞费用的计算和分摊方法[J].电力自动化设备,2002(05):10-12+28.
+
+[4] R．Bellman．控制过程的数学理论引论第一卷[M]．浦福全，邵明锋，姜启源译．人民教育出版社，1983
+
+[5]王秀丽,甘志,雷兵,王锡凡.输电阻塞管理的灵敏度分析模型及算法[J].电力系统自动化,2002(04):10-13+22.
+
+[6]李昊,孟繁波,刘杨,薛红林.输电阻塞管理的灵敏度分析算法和误差分析[J].吉林电力,2017,45(02):18-22.
+
+[7]贾俊平，何晓群，金勇进．统计学．北京：中国人民大学出版社，2015.
+
+\section{附录}
+\lstset{breaklines}%自动将长的代码行换行排版
+\lstset{extendedchars=false}%
+
+\kaishu {问题一：}
+\begin{lstlisting}[language=matlab]	
+%带常数项
+clc, clear
+ab=xlsread('question1.xlsx');
+xi=ab(:,2:9); %提取x1至x8的观察值
+X=[ones(32,1),xi]; %构造多元线性回归分析的数据矩阵X 
+result=zeros(6,9);
+R2=zeros(6,1);
+for i=1:6
+y=ab(:,[9+i]); %提取因变量y的观察值
+Y=nonzeros(y); %去掉y后面的0，并变成列向量 
+[beta,betaint,r,rint,st]=regress(Y,X); %计算回归系数和统计量等 
+result(i,:)=beta';%输出系数矩阵
+R2(i)=st(1);
+end
+xlswrite('result.xlsx',result)
+xlswrite('result.xlsx',R2,'J1:J6')
+
+%不带常数项
+clc, clear
+ab=xlsread('question1.xlsx'); 
+xi=ab(:,2:9); 
+X=[xi]; 
+result=zeros(6,8);
+R2=zeros(6,1);
+for i=1:6
+y=ab(:,[9+i]); 
+Y=nonzeros(y); 
+[beta,betaint,r,rint,st]=regress(Y,X);  
+result(i,:)=beta';
+R2(i)=st(1);
+end 
+xlswrite('result.xlsx',result)
+xlswrite('result.xlsx',R2,'J1:J6')
+	
+\end{lstlisting}
+~\\
+\kaishu {问题三：}
+\begin{lstlisting}[language=matlab]
+%法一：基于0/1矩阵的规划
+o=ones(1,12);z=zeros(1,12);beq=ones(8,1);
+T=[70	70	87	120	120	120	150	150	150	150	153	190
+30	30	50	58	58	73	79	81	81	81	88	89
+110	110	132	150	150	180	180	200	228	240	240	280
+55	60	60.5	70	80	90	99.5	100	115	115	115	116
+75	80	95	95	98	110	125	125	135	145	152	155
+95	95	95	105	125	125	140	150	155	170	170	180
+50	60.1	65	70	85	95	102.1	105	110	120	123	125
+63	70	70	90	90	110	110	117	130	140	155	160
+];
+T1=[120	73	180	80	125	125	81.1	90];
+T2=[2.2	1	3.2	1.3	1.8	2 1.4	1.8];
+Aeq=[o,z,z,z,z,z,z,z;
+z,o,z,z,z,z,z,z;
+z,z,o,z,z,z,z,z;
+z,z,z,o,z,z,z,z;
+z,z,z,z,o,z,z,z;
+z,z,z,z,z,o,z,z;
+z,z,z,z,z,z,o,z;
+z,z,z,z,z,z,z,o];
+A=[T(1,:),z,z,z,z,z,z,z;
+z,T(2,:),z,z,z,z,z,z;
+z,z,T(3,:),z,z,z,z,z;
+z,z,z,T(4,:),z,z,z,z;
+z,z,z,z,T(5,:),z,z,z;
+z,z,z,z,z,T(6,:),z,z;
+z,z,z,z,z,z,T(7,:),z;
+z,z,z,z,z,z,z,T(8,:);
+-T(1,:),z,z,z,z,z,z,z;
+z,-T(2,:),z,z,z,z,z,z;
+z,z,-T(3,:),z,z,z,z,z;
+z,z,z,-T(4,:),z,z,z,z;
+z,z,z,z,-T(5,:),z,z,z;
+z,z,z,z,z,-T(6,:),z,z;
+z,z,z,z,z,z,-T(7,:),z;
+z,z,z,z,z,z,z,-T(8,:);
+-T(1,:),-T(2,:),-T(3,:),-T(4,:),-T(5,:),-T(6,:),-T(7,:),-T(8,:);];
+b=[T1';-T2';-982.4];
+lb=zeros(96,1);ub=ones(96,1);x0=ones(96,1);
+%options = optimoptions('fminimax');
+[x,fval,maxfval,exitflag]=fminimax(@money,x0,A,b,Aeq,beq,lb,ub,[])
+
+%法二：基于回溯思想算法
+clc
+clear
+t=input('请输入总出力值(负荷需求)：');
+start=xlsread('各机组出力方案（完全）.xls','B2:I8'); %导入各机组处理方案表格
+speed=[2.2 1 3.2 1.3 1.8 2 1.4 1.8]; %爬坡速率
+c=[];
+for i=1:size(speed,2)
+c=[c,start(1,i)+15*speed(1,i)];  %计算15分钟后各机组的最大出力值
+end
+x=xlsread('problem3.2.xlsx','A1:J8'); %导入段容量表格
+a=[];
+for i=1:size(x,1) %size(x,1)返回x的行数，行遍历
+sum=0;
+for j=1:size(x,2) %size(x,2)返回x的列数，列遍历
+sum=sum+x(i,j);
+if sum>c(1,i)
+break;
+end       %单个机组段容量累加，若超过最大出力值跳出循环，转到下一机组
+end
+a=[a,j]; %得到各机组段容量的范围，1行8列
+end
+y=xlsread('problem3.1.xlsx','A1:J8');  %导入段价表格
+true=0;
+while(true==0)
+max=0;
+for i=1:8   %各机组进行遍历
+for j=1:a(1,i)  %各机组可取的段容量范围遍历
+if y(i,j)>max  
+max=y(i,j); %选取到新的段价最大值
+s1=i;     
+s2=j;    %找到最大值以及其所在的行和列
+end
+end
+end
+sum=0;  %初始化
+for i=1:8
+if (s1==i) 
+for j=1:s2    %若含有价格最高行，取到清算价为止
+sum=sum+x(i,j);
+end
+else
+for j=1:a(1,i) %其余机组，选到该机组最大出力为止
+sum=sum+x(i,j);
+end
+end
+end        %记录此时最大出力和与最大负荷比较
+if sum>=t  %此时最大出力大于最大负荷值
+answer=max;   %记录下当前的最大值
+a(1,s1)=s2-1;  
+s3=s1;    
+s4=s2;    %记下最大值所在的行与列
+else
+true=1;
+end
+end
+%answer即为最终得到的清算值
+disp(['清算价格为:',num2str(answer)]);
+
+\end{lstlisting}
+
+
+~\\
+\kaishu {问题四：}
+\begin{lstlisting}[language=matlab]
+function f = mubiao4(x)
+x=x';
+T=xlsread('problem3.2.xlsx','A1:J8');T=cumsum(T,2);P=xlsread('problem3.1.xlsx','A1:J8');
+x0=[150,79,180,99.5,125,140,95,113.9];
+for i = 1:8
+a=(T(i,:)>=x(i));
+if sum(a)
+[~,k] = max(a,[],2);
+L(i)=k;
+end
+end
+for j = 1:8
+C(j)=P(j,L(j));
+end
+h=0;f=0;
+for m = 1:8
+h=abs((C(m)-303)*(x(m)-x0(m)));
+f=f+h;
+end
+end
+	
+clc,clear;
+xx=xlsread('question3.xlsx','A19:H19');v=xlsread('question3.xlsx','A20:H20');
+T=xlsread('problem3.2.xlsx','A1:J8');T=cumsum(T,2);
+T1=xx+15.*v;T2=xx-15.*v;
+A=xlsread('result.xlsx','B2:I7');
+A=[A;
+-A;]; 
+e=xlsread('question3.xlsx','A22:F22')';a0=xlsread('result.xlsx','A2:A7');
+b=[e-a0;e+a0];beq=982.4;
+Aeq=[1,1,1,1,1,1,1,1];xy=[130,60,195,85,115,138,88,115]';
+lb=T2';ub=T1';
+[x,fval,exitflag]=fmincon('mubiao4',xy,A,b,Aeq,beq,lb,ub,[])
+
+function f = money(x)
+W=[-505,0,124,124,168,210,252,312,330,363,489,489;
+-560,0,182,203,203,245,300,320,360,410,495,495;
+-610,0,152,152,189,233,258,308,356,356,415,500;
+-500,150,170,170,200,255,302,302,325,380,435,800;
+-590,0,116,146,188,188,215,250,310,396,510,510;
+-607,-607,0,159,173,205,252,305,380,380,405,520;
+-500,120,120,180,251,260,306,306,315,335,348,548;
+-800,-800,153,183,233,253,283,303,303,318,400,800];
+for i=1:8
+f(i)=x(12*(i-1)+1).*W(i,1)+x(12*(i-1)+2).*W(i,2)+x(12*(i-1)+3).*W(i,3)+x(12*(i-1)+4).*W(i,4)+x(12*(i-1)+5).*W(i,5)+x(12*(i-1)+6).*W(i,6)+x(12*(i-1)+7).*W(i,7)+x(12*(i-1)+8).*W(i,8)+x(12*(i-1)+9).*W(i,9)+x(12*(i-1)+10).*W(i,10)+x(12*(i-1)+11).*W(i,11)+x(12*(i-1)+12).*W(i,12);
+end
+end
+
+\end{lstlisting}
+
+~\\
+\kaishu {问题五：}
+\begin{lstlisting}[language=matlab]
+clc,clear;
+xx=xlsread('question3.xlsx','A19:H19');v=xlsread('question3.xlsx','A20:H20');
+L=xlsread('result.xlsx','B2:I7');q=xlsread('question3.xlsx','A23:F23')';
+a0=xlsread('result.xlsx','A2:A7');
+LL=xlsread('question3.xlsx','A22:F22');
+T1=xx+15.*v;T2=xx-15.*v;
+Aeq=[1,1,1,1,1,1,1,1,0,0,0,0,0,0];beq=1052.8;
+A=[L(1,:),-LL(1)*q(1),0,0,0,0,0;   
+L(2,:),0,-LL(2)*q(2),0,0,0,0;
+L(3,:),0,0,-LL(3)*q(3),0,0,0;
+L(4,:),0,0,0,-LL(4)*q(4),0,0;
+L(5,:),0,0,0,0,-LL(5)*q(5),0;
+L(6,:),0,0,0,0,0,-LL(6)*q(6);];
+b=LL'-a0;lb=[T2';-inf;-inf;-inf;-inf;-inf;-inf];ub=[T1';0.3937;0;0;0;0.0114;0.2385];
+xy=[153.0000
+88.0000
+228.0000
+99.5000
+152.0000
+113.2000
+102.1000
+117.0000
+rand(6,1)];
+[x,fval,exitflag]=fmincon('mubiao4',xy,A,b,Aeq,beq,lb,ub,[])
+	
+clc,clear;
+xx=xlsread('question3.xlsx','A19:H19');v=xlsread('question3.xlsx','A20:H20');
+L=xlsread('result.xlsx','B2:I7');q=xlsread('question3.xlsx','A23:F23')';
+a0=xlsread('result.xlsx','A2:A7');
+LL=xlsread('question3.xlsx','A22:F22');
+T1=xx+15.*v;T2=xx-15.*v;
+f=[0;0;0;0;0;0;0;0;0;0;0;0;0;0;1];
+Aeq=[1,1,1,1,1,1,1,1,0,0,0,0,0,0,0;];
+beq=1052.8;
+A=[0,0,0,0,0,0,0,0,1,0,0,0,0,0,-1;
+0,0,0,0,0,0,0,0,0,1,0,0,0,0,-1;
+0,0,0,0,0,0,0,0,0,0,1,0,0,0,-1;
+0,0,0,0,0,0,0,0,0,0,0,1,0,0,-1;
+0,0,0,0,0,0,0,0,0,0,0,0,1,0,-1;
+0,0,0,0,0,0,0,0,0,0,0,0,0,1,-1;
+L(1,:),-LL(1)*q(1),0,0,0,0,0,0;
+L(2,:),0,-LL(2)*q(2),0,0,0,0,0;
+L(3,:),0,0,-LL(3)*q(3),0,0,0,0;
+L(4,:),0,0,0,-LL(4)*q(4),0,0,0;
+L(5,:),0,0,0,0,-LL(5)*q(5),0,0;
+L(6,:),0,0,0,0,0,-LL(6)*q(6),0;];
+b=zeros(6,1);b=[b;LL'-a0];
+lb=[T2';0;0;0;0;0;0;0];
+ub=[T1';1;1;1;1;1;1;1];
+[x,fval,exitflag]=linprog(f,A,b,Aeq,beq,lb,ub)
+\end{lstlisting}
+
+\end{document}
