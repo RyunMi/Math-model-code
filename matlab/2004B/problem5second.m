@@ -1,0 +1,20 @@
+clc,clear;
+%第二步：将第一步求出的各警戒系数最大值作为约束求阻塞费用最小
+xx=xlsread('question3.xlsx','A19:H19');%导入方案0的出力
+v=xlsread('question3.xlsx','A20:H20');%导入爬坡速率
+L=xlsread('result.xlsx','B2:I7');%导入潮流关于出力方程非常数项的系数
+q=xlsread('question3.xlsx','A23:F23')';%导入各机组安全裕度
+a0=xlsread('result.xlsx','A2:A7');%导入潮流关于出力方程的常数项系数
+LL=xlsread('question3.xlsx','A22:F22');%导入潮流限值
+T1=xx+15.*v;T2=xx-15.*v;%T1为出力上限，T2为出力下限
+Aeq=[1,1,1,1,1,1,1,1,0,0,0,0,0,0];beq=1052.8;
+A=[L(1,:),-LL(1)*q(1),0,0,0,0,0;   
+   L(2,:),0,-LL(2)*q(2),0,0,0,0;
+   L(3,:),0,0,-LL(3)*q(3),0,0,0;
+   L(4,:),0,0,0,-LL(4)*q(4),0,0;
+   L(5,:),0,0,0,0,-LL(5)*q(5),0;
+   L(6,:),0,0,0,0,0,-LL(6)*q(6);];
+b=LL'-a0;lb=[T2';-inf;-inf;-inf;-inf;-inf;-inf];ub=[T1';0.3937;0;0;0;0.0114;0.2385];
+xy=[153.0000;88.0000;228.0000;99.5000;152.0000;113.2000;102.1000;117.0000;rand(6,1)];%将第一步求出的出力分配和随机生成的警戒系数作为初值
+[x,fval,exitflag]=fmincon('mubiao4',xy,A,b,Aeq,beq,lb,ub,[]);
+disp(x);disp(fval);disp(exitflag);
