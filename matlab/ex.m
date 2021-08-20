@@ -1,0 +1,11 @@
+clc,clear
+f=[40,90];
+f=-f;
+inction=[1:2];%设置x1，x2为整数
+A=[9,7;
+    7,20];
+b=[56,70]';
+lb=zeros(1,2);
+[x,fval,exitflag]=intlinprog(f,inction,A,b,[],[],lb);
+x
+fval=-fval

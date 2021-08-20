@@ -1,0 +1,15 @@
+clc,clear;
+f=[3,8,2,10,3,8,7,2,9,7,6,4,2,7,5,8,4,2,3,5,9,10,6,9,10];
+o=ones(1,5);y=eye(5,5);z=zeros(1,5);
+Aeq=[o,z,z,z,z
+   z,o,z,z,z
+   z,z,o,z,z
+   z,z,z,o,z
+   z,z,z,z,o
+   y,y,y,y,y];
+beq=ones(10,1);
+A=[];
+b=[]';
+lb=zeros(1,25);ub=ones(1,25);
+[x,fval,exitflag]=linprog(f,A,b,Aeq,beq,lb,ub);
+disp(fval);
