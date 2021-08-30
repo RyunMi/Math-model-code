@@ -1,4 +1,4 @@
-<mxfile host="app.diagrams.net" modified="2021-08-30T11:26:43.568Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36 Edg/92.0.902.84" etag="RA2u703NVj0o9meCjTh0" version="14.9.9" type="github">
+<mxfile host="app.diagrams.net" modified="2021-08-30T11:37:23.604Z" agent="5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/92.0.4515.159 Safari/537.36 Edg/92.0.902.84" etag="ja_iQTIrpuBHdkFic99J" version="14.9.9" type="github">
   <diagram id="C5RBs43oDa-KdzZeNtuy" name="Page-1">
     <mxGraphModel dx="848" dy="399" grid="1" gridSize="10" guides="1" tooltips="1" connect="1" arrows="1" fold="1" page="1" pageScale="1" pageWidth="827" pageHeight="1169" math="0" shadow="0">
       <root>
@@ -52,15 +52,15 @@
             <mxPoint x="340" y="310" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="oPw_4JtilTDAKxZMYBcZ-23" value="" style="endArrow=classic;html=1;entryX=1;entryY=0.39;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryPerimeter=0;strokeColor=#79948B;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="oPw_4JtilTDAKxZMYBcZ-46" target="oPw_4JtilTDAKxZMYBcZ-42">
+        <mxCell id="oPw_4JtilTDAKxZMYBcZ-23" value="" style="endArrow=classic;html=1;entryX=1;entryY=0.39;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryPerimeter=0;strokeColor=#79948B;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="oPw_4JtilTDAKxZMYBcZ-64" target="oPw_4JtilTDAKxZMYBcZ-42">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="550" y="165" as="sourcePoint" />
+            <mxPoint x="510" y="175" as="sourcePoint" />
             <mxPoint x="450" y="170" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="oPw_4JtilTDAKxZMYBcZ-24" value="" style="endArrow=classic;html=1;entryX=0.993;entryY=0.643;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryPerimeter=0;strokeColor=#79948B;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="oPw_4JtilTDAKxZMYBcZ-47" target="oPw_4JtilTDAKxZMYBcZ-42">
+        <mxCell id="oPw_4JtilTDAKxZMYBcZ-24" value="" style="endArrow=classic;html=1;entryX=0.993;entryY=0.643;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryPerimeter=0;strokeColor=#79948B;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="oPw_4JtilTDAKxZMYBcZ-65" target="oPw_4JtilTDAKxZMYBcZ-42">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="550" y="235" as="sourcePoint" />
+            <mxPoint x="510" y="227.5" as="sourcePoint" />
             <mxPoint x="450" y="190" as="targetPoint" />
           </mxGeometry>
         </mxCell>
@@ -91,44 +91,47 @@
         <mxCell id="oPw_4JtilTDAKxZMYBcZ-34" value="空载返程" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#CDA28E;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
           <mxGeometry x="170" y="340" width="100" height="50" as="geometry" />
         </mxCell>
-        <mxCell id="oPw_4JtilTDAKxZMYBcZ-42" value="等待时间" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#79948B;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+        <mxCell id="oPw_4JtilTDAKxZMYBcZ-42" value="时间成本" style="rounded=0;whiteSpace=wrap;html=1;fillColor=#FFFFFF;strokeColor=#79948B;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
           <mxGeometry x="330" y="180" width="120" height="40" as="geometry" />
         </mxCell>
-        <mxCell id="oPw_4JtilTDAKxZMYBcZ-46" value="排队时长" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
-          <mxGeometry x="510" y="160" width="60" height="30" as="geometry" />
-        </mxCell>
-        <mxCell id="oPw_4JtilTDAKxZMYBcZ-47" value="乘客乘车规律" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
-          <mxGeometry x="510" y="205" width="80" height="45" as="geometry" />
-        </mxCell>
-        <mxCell id="oPw_4JtilTDAKxZMYBcZ-48" value="返程路程" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
-          <mxGeometry x="680" y="280" width="50" height="20" as="geometry" />
-        </mxCell>
-        <mxCell id="oPw_4JtilTDAKxZMYBcZ-50" value="" style="endArrow=classic;html=1;entryX=1;entryY=0.25;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#79948B;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="oPw_4JtilTDAKxZMYBcZ-48" target="oPw_4JtilTDAKxZMYBcZ-28">
+        <mxCell id="oPw_4JtilTDAKxZMYBcZ-50" value="" style="endArrow=classic;html=1;entryX=1;entryY=0.25;entryDx=0;entryDy=0;exitX=0;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#79948B;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="oPw_4JtilTDAKxZMYBcZ-66" target="oPw_4JtilTDAKxZMYBcZ-28">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="660" y="320" as="sourcePoint" />
+            <mxPoint x="680" y="290" as="sourcePoint" />
             <mxPoint x="710" y="270" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="oPw_4JtilTDAKxZMYBcZ-51" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="oPw_4JtilTDAKxZMYBcZ-48" target="oPw_4JtilTDAKxZMYBcZ-48">
-          <mxGeometry relative="1" as="geometry" />
+        <mxCell id="oPw_4JtilTDAKxZMYBcZ-51" style="edgeStyle=orthogonalEdgeStyle;rounded=0;orthogonalLoop=1;jettySize=auto;html=1;exitX=0.5;exitY=1;exitDx=0;exitDy=0;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry relative="1" as="geometry">
+            <mxPoint x="705" y="300" as="sourcePoint" />
+            <mxPoint x="705" y="300" as="targetPoint" />
+          </mxGeometry>
         </mxCell>
-        <mxCell id="oPw_4JtilTDAKxZMYBcZ-52" value="油价" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
-          <mxGeometry x="680" y="320" width="40" height="20" as="geometry" />
-        </mxCell>
-        <mxCell id="oPw_4JtilTDAKxZMYBcZ-53" value="收费标准" style="text;html=1;strokeColor=none;fillColor=none;align=center;verticalAlign=middle;whiteSpace=wrap;rounded=0;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
-          <mxGeometry x="680" y="370" width="50" height="20" as="geometry" />
-        </mxCell>
-        <mxCell id="oPw_4JtilTDAKxZMYBcZ-57" value="" style="endArrow=classic;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#79948B;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="oPw_4JtilTDAKxZMYBcZ-52" target="oPw_4JtilTDAKxZMYBcZ-28">
+        <mxCell id="oPw_4JtilTDAKxZMYBcZ-57" value="" style="endArrow=classic;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;entryX=1;entryY=0.5;entryDx=0;entryDy=0;strokeColor=#79948B;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="oPw_4JtilTDAKxZMYBcZ-68" target="oPw_4JtilTDAKxZMYBcZ-28">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="720" y="280" as="sourcePoint" />
+            <mxPoint x="680" y="330" as="sourcePoint" />
             <mxPoint x="660" y="322" as="targetPoint" />
           </mxGeometry>
         </mxCell>
-        <mxCell id="oPw_4JtilTDAKxZMYBcZ-58" value="" style="endArrow=classic;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#79948B;entryX=1;entryY=0.75;entryDx=0;entryDy=0;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="oPw_4JtilTDAKxZMYBcZ-53" target="oPw_4JtilTDAKxZMYBcZ-28">
+        <mxCell id="oPw_4JtilTDAKxZMYBcZ-58" value="" style="endArrow=classic;html=1;exitX=0;exitY=0.5;exitDx=0;exitDy=0;strokeColor=#79948B;entryX=1;entryY=0.75;entryDx=0;entryDy=0;" edge="1" parent="WIyWlLk6GJQsqaUBKTNV-1" source="oPw_4JtilTDAKxZMYBcZ-69" target="oPw_4JtilTDAKxZMYBcZ-28">
           <mxGeometry width="50" height="50" relative="1" as="geometry">
-            <mxPoint x="730" y="290" as="sourcePoint" />
+            <mxPoint x="680" y="380" as="sourcePoint" />
             <mxPoint x="620" y="350" as="targetPoint" />
           </mxGeometry>
+        </mxCell>
+        <mxCell id="oPw_4JtilTDAKxZMYBcZ-64" value="&lt;span&gt;排队时长&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#79948B;fillColor=#FFFFFF;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="510" y="160" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="oPw_4JtilTDAKxZMYBcZ-65" value="&lt;span&gt;乘客乘车规律&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#79948B;fillColor=#FFFFFF;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="510" y="210" width="80" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="oPw_4JtilTDAKxZMYBcZ-66" value="&lt;span&gt;返程路程&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#79948B;fillColor=#FFFFFF;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="680" y="280" width="70" height="30" as="geometry" />
+        </mxCell>
+        <mxCell id="oPw_4JtilTDAKxZMYBcZ-68" value="&lt;span&gt;油价&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#79948B;fillColor=#FFFFFF;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="680" y="320" width="70" height="23.75" as="geometry" />
+        </mxCell>
+        <mxCell id="oPw_4JtilTDAKxZMYBcZ-69" value="&lt;span&gt;收费标准&lt;/span&gt;" style="rounded=0;whiteSpace=wrap;html=1;strokeColor=#79948B;fillColor=#FFFFFF;" vertex="1" parent="WIyWlLk6GJQsqaUBKTNV-1">
+          <mxGeometry x="680" y="352.5" width="70" height="30" as="geometry" />
         </mxCell>
       </root>
     </mxGraphModel>
